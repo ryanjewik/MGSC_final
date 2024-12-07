@@ -26,7 +26,7 @@ def get_token(country:str , app_name:str , app_id: str, user_agents: dict):
     print(f"Bearer {token}")
     return token
     
-def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1'):
+def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset:str = "1"):
 
     """
     Fetches reviews for a given app from the Apple App Store API.
