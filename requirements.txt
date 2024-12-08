@@ -1,0 +1,9 @@
+flask
+transformers
+pandas
+matplotlib
+google-play-scraper
+app-store-scraper
+numpy
+torch
+protobuf
