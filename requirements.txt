@@ -7,3 +7,6 @@ app-store-scraper
 numpy
 torch
 protobuf
+nltk
+tqdm
+requests
