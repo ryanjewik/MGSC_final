@@ -76,11 +76,25 @@ def create_emotion_spider(emotions_df, title_suffix, color, figsize):
     # Clear the current figure
     plt.close()
     
-    # Encode
-    
-    
     return graph
 
+def analyze_sentencewise_review(review):
+    # Split and classify
+    sentences = sent_tokenize(review)
+    sentence_scores = []
+    for sentence in sentences:
+        # classifier returns list of dicts that have only one emotion key and corresponding score in each dict
+        results = classifier(sentence)[0]
+        # Convert the list of dictionaries into a single dictionary
+        dict_scores = {d['label']: d['score'] for d in results}
+        sentence_scores.append(dict_scores)
+    
+    # Create a DataFrame from the sentence scores
+    scores_df = pd.DataFrame(sentence_scores)
+    
+    # Compute average scores for each emotion category
+    average_scores = scores_df.mean(numeric_only=True, axis=0)
+    return average_scores
 
 
 def analyze_app_emotions(reviews, app_name):
@@ -246,7 +260,7 @@ def get_reviews(app_name: str, num_reviews = 'all', country:str = 'us', as_df = 
             print(f"Total reviews collected: {len(all_reviews)}")
             
             # Optional: Add a delay to be nice to the API
-            time.sleep(1)
+            # time.sleep(1)
         
         except Exception as e:
             print(f"Error occurred: {e}")
@@ -255,7 +269,7 @@ def get_reviews(app_name: str, num_reviews = 'all', country:str = 'us', as_df = 
     
     if as_df:
         reviews_df = pd.json_normalize(all_reviews)
-        reviews_df['app_name'] = app_name
+        reviews_df['name'] = app_name
         renamed_reviews_df = reviews_df.rename(columns=lambda x: x.replace("attributes.", "") if x.startswith("attributes.") else x)
         return renamed_reviews_df
 
@@ -296,8 +310,10 @@ def home():
 @app.route('/search', methods=['POST'])
 def search_apps():
     app_search = request.form.get('app_search')
-    is_ios = request.form.get('ios') == 'true'
-    
+    is_ios = 'ios' in request.form
+    sentence_analysis = 'deep-analysis' in request.form
+    print(is_ios)
+    print(sentence_analysis)
     try:
         if is_ios:
             # Example Usage
@@ -314,17 +330,24 @@ def search_apps():
             ]
             graphs = []
             
-            for i in range(0, len(appIds)):
+            for i in range(0, 3): # Hard coded get 3 apps
                 # Get reviews
                 df = get_reviews(app_name = results['results'][i]['trackName'], num_reviews = retrieval_limit, country = 'us', as_df =True)
-                # Analyze emotions
-                emotion_df = analyze_app_emotions(df['review'], df['app_name'].iloc[0])
+                if sentence_analysis:
+                    print("Deep Analyzing...")
+                    emotion_df = pd.concat([df["name"], df["review"],df["review"].apply(analyze_sentencewise_review)], axis=1)
+                    emotion_df.rename(columns={"name": "app_name"}, inplace=True)
+                else:
+                    # Analyze emotions
+                    print("Shallow Analyzing...")
+                    print(df['name'].iloc[0])
+                    emotion_df = analyze_app_emotions(df['review'], df['name'].iloc[0])
                 
                 # Generate graph
                 img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
                                         'blue' if i == 0 else 'green' if i == 1 else 'red',
                                         (10,10) if i == 0 else (6,6))
-                
+                print("appending graphs")
                 graphs.append({
                     'name': df['name'].iloc[0],
                     'image': img,
@@ -341,7 +364,15 @@ def search_apps():
                 # Get reviews
                 df = get_android_reviews(appIds[i], appNames[i])
                 # Analyze emotions
-                emotion_df = analyze_app_emotions(df['review'], df['name'].iloc[0])
+                if sentence_analysis:
+                    print("Deep Analyzing...")
+                    emotion_df = pd.concat([df["name"], df["review"],df["review"].apply(analyze_sentencewise_review)], axis=1)
+                    emotion_df.rename(columns={"name": "app_name"}, inplace=True)
+                    
+                else:
+                    print("Shallow Analyzing...")
+                    emotion_df = analyze_app_emotions(df['review'], df['name'].iloc[0])
+                
                 
                 # Generate graph
                 img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
