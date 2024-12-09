@@ -26,92 +26,7 @@ import time
 from typing import List
 import pandas as pd
 
-app = Flask(__name__)
-# Initialize classifier
-classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
-retrieval_limit = 400
 
-
-
-@app.route("/")
-def home():
-    return render_template('index.html')
-
-
-
-@app.route('/search', methods=['POST'])
-def search_apps():
-    app_search = request.form.get('app_search')
-    is_ios = request.form.get('ios') == 'true'
-    
-    try:
-        if is_ios:
-            # Example Usage
-            results = search_app_store(app_search)
-            for app in results["results"]:
-                print(f"App Name: {app['trackName']}")
-                print(f"Developer: {app['sellerName']}")
-                print(f"Price: {app['formattedPrice']}")
-                print(f"URL: {app['trackViewUrl']}\n")
-            country = 'us'
-            user_agents = [
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-            ]
-            graphs = []
-            
-            for i in range(0, len(appIds)):
-                # Get reviews
-                df = get_reviews(app_name = results['results'][i]['trackName'], num_reviews = retrieval_limit, country = 'us', as_df =True)
-                # Analyze emotions
-                emotion_df = analyze_app_emotions(df['review'], df['app_name'].iloc[0])
-                
-                # Generate graph
-                img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
-                                        'blue' if i == 0 else 'green' if i == 1 else 'red',
-                                        (10,10) if i == 0 else (6,6))
-                
-                graphs.append({
-                    'name': df['name'].iloc[0],
-                    'image': img,
-                    'is_primary': i == 0
-                })
-                
-            return render_template('results.html', graphs=graphs)
-        else:
-            # Search for apps
-            appIds, appNames = get_android_apps(app_search)
-            # Process each app and generate graphs
-            graphs = []
-            for i in range(0, len(appIds)):
-                # Get reviews
-                df = get_android_reviews(appIds[i], appNames[i])
-                # Analyze emotions
-                emotion_df = analyze_app_emotions(df['review'], df['name'].iloc[0])
-                
-                # Generate graph
-                img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
-                                        'blue' if i == 0 else 'green' if i == 1 else 'red',
-                                        (10,10) if i == 0 else (6,6))
-                
-                graphs.append({
-                    'name': df['name'].iloc[0],
-                    'image': img,
-                    'is_primary': i == 0
-                })
-                
-            return render_template('results.html', graphs=graphs)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-    
-    
-    
-    
-    
 #functions
 def create_emotion_spider(emotions_df, title_suffix, color, figsize):
     # Create buffer to store image
@@ -363,3 +278,91 @@ def search_app_store(query, country="us", limit=3):
         raise Exception(f"Error: {response.status_code}")
 
 
+# Flask App
+
+app = Flask(__name__)
+# Initialize classifier
+classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
+retrieval_limit = 400
+
+
+
+@app.route("/")
+def home():
+    return render_template('index.html')
+
+
+
+@app.route('/search', methods=['POST'])
+def search_apps():
+    app_search = request.form.get('app_search')
+    is_ios = request.form.get('ios') == 'true'
+    
+    try:
+        if is_ios:
+            # Example Usage
+            results = search_app_store(app_search)
+            for app in results["results"]:
+                print(f"App Name: {app['trackName']}")
+                print(f"Developer: {app['sellerName']}")
+                print(f"Price: {app['formattedPrice']}")
+                print(f"URL: {app['trackViewUrl']}\n")
+            country = 'us'
+            user_agents = [
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+            ]
+            graphs = []
+            
+            for i in range(0, len(appIds)):
+                # Get reviews
+                df = get_reviews(app_name = results['results'][i]['trackName'], num_reviews = retrieval_limit, country = 'us', as_df =True)
+                # Analyze emotions
+                emotion_df = analyze_app_emotions(df['review'], df['app_name'].iloc[0])
+                
+                # Generate graph
+                img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
+                                        'blue' if i == 0 else 'green' if i == 1 else 'red',
+                                        (10,10) if i == 0 else (6,6))
+                
+                graphs.append({
+                    'name': df['name'].iloc[0],
+                    'image': img,
+                    'is_primary': i == 0
+                })
+                
+            return render_template('results.html', graphs=graphs)
+        else:
+            # Search for apps
+            appIds, appNames = get_android_apps(app_search)
+            # Process each app and generate graphs
+            graphs = []
+            for i in range(0, len(appIds)):
+                # Get reviews
+                df = get_android_reviews(appIds[i], appNames[i])
+                # Analyze emotions
+                emotion_df = analyze_app_emotions(df['review'], df['name'].iloc[0])
+                
+                # Generate graph
+                img = create_emotion_spider(emotion_df, df['name'].iloc[0], 
+                                        'blue' if i == 0 else 'green' if i == 1 else 'red',
+                                        (10,10) if i == 0 else (6,6))
+                
+                graphs.append({
+                    'name': df['name'].iloc[0],
+                    'image': img,
+                    'is_primary': i == 0
+                })
+                
+            return render_template('results.html', graphs=graphs)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+    
+    
+    
+    
+    
