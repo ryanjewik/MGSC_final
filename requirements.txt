@@ -9,4 +9,5 @@ torch
 protobuf
 nltk
 tqdm
-requests
+requests==2.23.0
+urllib3==2.2.3
