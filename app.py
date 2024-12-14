@@ -83,11 +83,12 @@ def analyze_sentencewise_review(review):
     sentences = sent_tokenize(review)
     sentence_scores = []
     for sentence in sentences:
-        # classifier returns list of dicts that have only one emotion key and corresponding score in each dict
-        results = classifier(sentence)[0]
-        # Convert the list of dictionaries into a single dictionary
-        dict_scores = {d['label']: d['score'] for d in results}
-        sentence_scores.append(dict_scores)
+        if len(sentence) > 3:
+            # classifier returns list of dicts that have only one emotion key and corresponding score in each dict
+            results = classifier(sentence)[0]
+            # Convert the list of dictionaries into a single dictionary
+            dict_scores = {d['label']: d['score'] for d in results}
+            sentence_scores.append(dict_scores)
     
     # Create a DataFrame from the sentence scores
     scores_df = pd.DataFrame(sentence_scores)
