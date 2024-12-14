@@ -1,28 +1,44 @@
 # App Store Recommendation Algorithm
 
-## Acknowledgments
+Create a data visualization dashboard to capture emotion/sentiment of user reviews on a specified iOS or Android App.
 
-- https://pypi.org/project/app-store-scraper/
-- https://github.com/glennfang/apple-app-reviews-scraper
+## Getting Started
 
+Clone this repository:
 
-make virtual environment:
+    git clone https://github.com/ryanjewik/MGSC_final.git
+
+Make virtual environment:
     
     python3 -m venv env
 
+Activate virtual environment:
+
     .\env\Scripts\activate
 
-install dependencies:
+Or activating virtual enviroment for MacOS/Linux
 
-    pip install -r requirements.txt
+    source ./env/bin/activate
 
-put this in your env/pyvenv.cfg
+Install dependencies:
 
-    FLASK_APP=app.py
-    FLASK_ENV=development
+    pip3 install -r requirements.txt
 
-run flask app:
+Run flask app:
 
-    python -m flask run --port 8000
+    python3 -m flask run --port 8000
+
+## Deployment
+
+Check the official Flask Deployment Guide for ways to deploy this Flask Application
+
+https://flask.palletsprojects.com/en/stable/deploying/
+
+## Acknowledgments
+
+Libraries used to scape App Store Reviews
+
+- https://pypi.org/project/app-store-scraper/
+- https://github.com/glennfang/apple-app-reviews-scraper
 
 
