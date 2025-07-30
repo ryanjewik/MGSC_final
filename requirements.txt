@@ -1,5 +1,6 @@
-flask
+protobuf<=3.20.3
 transformers
+flask
 pandas
 matplotlib
 google-play-scraper
@@ -9,5 +10,5 @@ torch
 protobuf
 nltk
 tqdm
-requests==2.23.0
-urllib3==2.2.3
+requests
+urllib3
